@@ -69,7 +69,7 @@ router.post('/new', (req, res) => {
       price: req.body.price,
       stock: req.body.stock,
       category_id: req.body.category_id,
-      tagIds: req.body.tagIds,
+      tagIds: req.body.tagIds
 
     })
     .then((product) => {
@@ -95,14 +95,14 @@ router.post('/new', (req, res) => {
 });
 
 // update product
-router.put('update/:id', (req, res) => {
+router.put('/update/:id', (req, res) => {
   // update product data
   Product.update(
     {
       product_name: req.body.product_name,
       price: req.body.price,
       stock: req.body.stock,
-      category_id: req.body.category.id,
+      category_id: req.body.category_id,
       tagIds: req.body.tagIds
     },
     {
@@ -149,7 +149,7 @@ router.put('update/:id', (req, res) => {
     });
 });
 
-router.delete('delete/:id', (req, res) => {
+router.delete('/delete/:id', (req, res) => {
   // delete one product by its `id` value
   Product.destroy(
     {
