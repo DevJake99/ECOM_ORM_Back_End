@@ -4,19 +4,57 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 // The `/api/products` endpoint
 
 // get all products
-router.get('/', (req, res) => {
+router.get('/all', (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
+  Product.findAll({
+    order: ['product_name'],
+    include: [
+      {
+        model: Category,
+        as: 'category'
+      },
+      {
+        model: Tag,
+        as: 'tags'
+      }
+    ]
+
+  }).then((productData => {
+    res.json(productData)
+  }))
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
 // get one product
-router.get('/:id', (req, res) => {
+router.get('find/:id', (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
+  Product.findByPk(req.params.id, {
+    inlcude: [
+      {
+        model: Category,
+        as: 'category'
+      },
+      {
+        model: ProductTag,
+        as: 'product_tags'
+      }
+    ]
+  }).then((ProductData) => {
+    res.json(ProductData)
+  })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    })
 });
 
 // create new product
-router.post('/', (req, res) => {
+router.post('/new', (req, res) => {
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -25,7 +63,15 @@ router.post('/', (req, res) => {
       tagIds: [1, 2, 3, 4]
     }
   */
-  Product.create(req.body)
+  Product.create(
+    {
+      product_name: req.body.product_name,
+      price: req.body.price,
+      stock: req.body.stock,
+      category_id: req.body.category_id,
+      tagIds: req.body.tagIds,
+
+    })
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
       if (req.body.tagIds.length) {
@@ -34,6 +80,7 @@ router.post('/', (req, res) => {
             product_id: product.id,
             tag_id,
           };
+
         });
         return ProductTag.bulkCreate(productTagIdArr);
       }
@@ -48,13 +95,23 @@ router.post('/', (req, res) => {
 });
 
 // update product
-router.put('/:id', (req, res) => {
+router.put('update/:id', (req, res) => {
   // update product data
-  Product.update(req.body, {
-    where: {
-      id: req.params.id,
+  Product.update(
+    {
+      product_name: req.body.product_name,
+      price: req.body.price,
+      stock: req.body.stock,
+      category_id: req.body.category.id,
+      tagIds: req.body.tagIds
     },
-  })
+    {
+      where:
+      {
+        id: req.params.id
+      }
+    }
+  )
     .then((product) => {
       if (req.body.tagIds && req.body.tagIds.length) {
 
@@ -92,8 +149,21 @@ router.put('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('delete/:id', (req, res) => {
   // delete one product by its `id` value
+  Product.destroy(
+    {
+      where: {
+        id: req.params.id
+      }
+    })
+    .then((deletedProduct) => {
+      res.json(deletedProduct)
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    })
 });
 
 module.exports = router;
